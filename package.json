@@ -1,0 +1,12 @@
+{
+  "name": "habitflow",
+  "version": "1.0.0",
+  "description": "HabitFlow - A simple offline desktop app for tracking daily habits, built with Electron.js",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

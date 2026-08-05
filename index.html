@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HabitFlow - Daily Habit Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app-shell">
+
+    <!-- ============ SIDEBAR ============ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">◐</span>
+        <span class="brand-name">HabitFlow</span>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="dashboard-view">
+          <span class="nav-icon">⌂</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="add-habit-view">
+          <span class="nav-icon">+</span>
+          <span>Add Habit</span>
+        </button>
+        <button class="nav-item" data-view="habits-view">
+          <span class="nav-icon">☰</span>
+          <span>My Habits</span>
+        </button>
+        <button class="nav-item" data-view="settings-view">
+          <span class="nav-icon">⚙</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Small steps, every day.</p>
+      </div>
+    </aside>
+
+    <!-- ============ MAIN CONTENT ============ -->
+    <main class="main-content">
+
+      <!-- ---------- DASHBOARD VIEW ---------- -->
+      <section id="dashboard-view" class="view active">
+        <header class="view-header">
+          <div>
+            <h1 id="greeting-text">Hello!</h1>
+            <p id="today-date" class="subtle-text">Today</p>
+          </div>
+        </header>
+
+        <!-- Stat cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <p class="stat-label">Total Habits</p>
+            <p class="stat-value" id="stat-total">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Completed Today</p>
+            <p class="stat-value" id="stat-completed">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Pending Today</p>
+            <p class="stat-value" id="stat-pending">0</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Completion</p>
+            <p class="stat-value" id="stat-percent">0%</p>
+          </div>
+        </div>
+
+        <div class="dashboard-lower">
+          <!-- Progress ring: the signature visual, showing today's completion -->
+          <div class="card progress-card">
+            <h2 class="card-title">Today's Progress</h2>
+            <div class="progress-ring-wrap">
+              <svg viewBox="0 0 160 160" class="progress-ring">
+                <circle class="ring-track" cx="80" cy="80" r="70"></circle>
+                <circle id="ring-fill" class="ring-fill" cx="80" cy="80" r="70"></circle>
+              </svg>
+              <div class="ring-center">
+                <span id="ring-percent-text">0%</span>
+                <span class="ring-sub-label">complete</span>
+              </div>
+            </div>
+
+            <!-- Simple text-style progress bar, as requested in the spec -->
+            <div class="bar-track">
+              <div id="progress-bar-fill" class="bar-fill"></div>
+            </div>
+          </div>
+
+          <!-- Motivational quote -->
+          <div class="card quote-card">
+            <h2 class="card-title">Daily Motivation</h2>
+            <p id="quote-text" class="quote-text">Loading a fresh quote for you...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- ADD HABIT VIEW ---------- -->
+      <section id="add-habit-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Add a New Habit</h1>
+            <p class="subtle-text">Define a habit you want to build consistency with.</p>
+          </div>
+        </header>
+
+        <form id="add-habit-form" class="card form-card">
+
+          <label class="form-label" for="habit-name-input">Habit Name</label>
+          <input
+            type="text"
+            id="habit-name-input"
+            class="form-input"
+            placeholder="e.g. Read 20 pages"
+            maxlength="40"
+          />
+
+          <label class="form-label" for="habit-category-select">Category</label>
+          <select id="habit-category-select" class="form-input">
+            <option value="Study">Study</option>
+            <option value="Exercise">Exercise</option>
+            <option value="Reading">Reading</option>
+            <option value="Health">Health</option>
+            <option value="Personal">Personal</option>
+            <option value="Other">Other</option>
+          </select>
+
+          <label class="form-label" for="habit-goal-input">Daily Goal (optional)</label>
+          <input
+            type="text"
+            id="habit-goal-input"
+            class="form-input"
+            placeholder="e.g. 30 minutes"
+            maxlength="30"
+          />
+
+          <label class="form-label">Icon (optional)</label>
+          <input
+            type="text"
+            id="habit-icon-input"
+            class="form-input icon-input"
+            placeholder="Pick an emoji, e.g. 📚"
+            maxlength="2"
+          />
+
+          <label class="form-label">Card Color</label>
+          <div id="color-swatch-row" class="color-swatch-row">
+            <!-- Color swatch buttons are generated by script.js -->
+          </div>
+
+          <p id="form-error" class="form-error"></p>
+
+          <div class="form-actions">
+            <button type="button" id="clear-form-btn" class="btn btn-ghost">Clear</button>
+            <button type="submit" id="add-habit-btn" class="btn btn-primary">Add Habit</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ---------- HABIT LIST VIEW ---------- -->
+      <section id="habits-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>My Habits</h1>
+            <p class="subtle-text">Mark today's habits as complete when you finish them.</p>
+          </div>
+        </header>
+
+        <div id="habit-list" class="habit-grid">
+          <!-- Habit cards are rendered here by script.js -->
+        </div>
+
+        <p id="empty-habits-message" class="empty-message" hidden>
+          You haven't added any habits yet. Go to "Add Habit" to create your first one.
+        </p>
+      </section>
+
+      <!-- ---------- SETTINGS VIEW ---------- -->
+      <section id="settings-view" class="view">
+        <header class="view-header">
+          <div>
+            <h1>Settings</h1>
+            <p class="subtle-text">Customize how HabitFlow looks and manage your data.</p>
+          </div>
+        </header>
+
+        <div class="card settings-card">
+          <div class="settings-row">
+            <div>
+              <p class="settings-row-title">Dark Mode</p>
+              <p class="settings-row-desc">Switch between light and dark themes.</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="dark-mode-toggle" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <hr class="settings-divider" />
+
+          <div class="settings-row">
+            <div>
+              <p class="settings-row-title">Reset All Data</p>
+              <p class="settings-row-desc">Permanently deletes every habit and resets HabitFlow.</p>
+            </div>
+            <button id="reset-data-btn" class="btn btn-danger">Reset Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
