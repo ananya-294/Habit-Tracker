@@ -1,9 +1,3 @@
-/* ==========================================================
-   HabitFlow Stylesheet
-   Organized in sections: Tokens, Base, Layout, Components,
-   Views, Dark Mode, Responsive.
-   ========================================================== */
-
 /* ---------- 1. DESIGN TOKENS ---------- */
 :root {
   /* Colors - light theme (default) */
@@ -359,10 +353,6 @@ button {
 
 .form-input:focus {
   border-color: var(--color-primary);
-}
-
-.icon-input {
-  max-width: 100px;
 }
 
 .color-swatch-row {
