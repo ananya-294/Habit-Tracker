@@ -16,7 +16,7 @@ function saveHabits() {
   localStorage.setItem("habits", JSON.stringify(habits));
 }
 
-// ===== Get today's date as "YYYY-MM-DD" =====
+// ===== Get today's date as "YYYY/MM/DD" =====
 function getTodayString() {
   const today = new Date();
   return today.toISOString().split("T")[0];
