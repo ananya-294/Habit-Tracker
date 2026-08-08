@@ -244,6 +244,13 @@ input[type="text"], select {
 
 /* ===== Small screens ===== */
 @media (max-width: 600px) {
-  .habit-row { flex-direction: column; align-items: flex-start; }
+  body { padding: 24px 14px 40px; }
+  section { padding: 18px; }
+
+  .habit-row { flex-direction: column; align-items: flex-start; gap: 12px; }
   .habit-actions { align-self: flex-end; }
+
+  /* the row is now tall and stacked, so "centered" no longer lines
+     the circle up with the habit name — pin it to the top instead */
+  .habit-circle { top: 2px; transform: none; }
 }
