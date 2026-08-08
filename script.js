@@ -1,400 +1,225 @@
-// script.js - HabitFlow app logic
-
-// ---- Storage keys ----
-const HABITS_STORAGE_KEY = "habitflow_habits";
-const THEME_STORAGE_KEY = "habitflow_theme";
-
-// Holds all habit objects
+// This array holds all the habits while the app is running
 let habits = [];
 
-// Default icon per category
-const categoryIcons = {
-  Study: "📘",
-  Exercise: "🏃",
-  Reading: "📚",
-  Health: "💧",
-  Personal: "🌱",
-  Other: "✨",
-};
-
-// Card color choices
-const colorOptions = ["#3F8A5E", "#E2A33D", "#5B8DBE", "#C97B84", "#8C7AE6", "#4FB3A9"];
-let selectedColor = colorOptions[0];
-
-// Motivational quotes
-const motivationalQuotes = [
-  "Small steps every day lead to big changes.",
-  "Consistency is what transforms average into excellence.",
-  "You don't have to be perfect, just consistent.",
-  "Every habit you build today shapes who you become tomorrow.",
-  "Progress, not perfection.",
-  "Discipline is choosing between what you want now and what you want most.",
-  "One percent better every day adds up.",
-  "Show up for yourself, even in small ways.",
-];
-
-// ---- DOM references ----
-const navItems = document.querySelectorAll(".nav-item");
-const views = document.querySelectorAll(".view");
-
-const greetingText = document.getElementById("greeting-text");
-const todayDateText = document.getElementById("today-date");
-
-const statTotal = document.getElementById("stat-total");
-const statCompleted = document.getElementById("stat-completed");
-const statPending = document.getElementById("stat-pending");
-const statPercent = document.getElementById("stat-percent");
-
-const ringFill = document.getElementById("ring-fill");
-const ringPercentText = document.getElementById("ring-percent-text");
-const progressBarFill = document.getElementById("progress-bar-fill");
-const quoteText = document.getElementById("quote-text");
-
-const addHabitForm = document.getElementById("add-habit-form");
-const habitNameInput = document.getElementById("habit-name-input");
-const habitCategorySelect = document.getElementById("habit-category-select");
-const habitGoalInput = document.getElementById("habit-goal-input");
-const colorSwatchRow = document.getElementById("color-swatch-row");
-const formError = document.getElementById("form-error");
-const clearFormBtn = document.getElementById("clear-form-btn");
-
-const habitListEl = document.getElementById("habit-list");
-const emptyHabitsMessage = document.getElementById("empty-habits-message");
-
-const darkModeToggle = document.getElementById("dark-mode-toggle");
-const resetDataBtn = document.getElementById("reset-data-btn");
-
-// Circumference of progress ring (radius = 70)
-const RING_CIRCUMFERENCE = 2 * Math.PI * 70;
-
-// ---- Helpers ----
-
-// Today's date as YYYY-MM-DD
-function getTodayDateString() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-// Friendly date, e.g. "Wednesday, August 5, 2026"
-function getFriendlyDateString() {
-  const now = new Date();
-  const options = { weekday: "long", year: "numeric", month: "long", day: "numeric" };
-  return now.toLocaleDateString(undefined, options);
-}
-
-// Greeting based on time of day
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning!";
-  if (hour < 18) return "Good afternoon!";
-  return "Good evening!";
-}
-
-// ---- Local Storage ----
-
-// Load habits from Local Storage
+// ===== Load habits from Local Storage =====
 function loadHabits() {
-  const savedData = localStorage.getItem(HABITS_STORAGE_KEY);
-  habits = savedData ? JSON.parse(savedData) : [];
-}
-
-// Save habits to Local Storage
-function saveHabits() {
-  localStorage.setItem(HABITS_STORAGE_KEY, JSON.stringify(habits));
-}
-
-// Load theme from Local Storage
-function loadTheme() {
-  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || "light";
-  applyTheme(savedTheme);
-}
-
-// Apply theme to the page
-function applyTheme(theme) {
-  if (theme === "dark") {
-    document.body.setAttribute("data-theme", "dark");
-    darkModeToggle.checked = true;
+  const saved = localStorage.getItem("habits");
+  if (saved) {
+    habits = JSON.parse(saved);
   } else {
-    document.body.removeAttribute("data-theme");
-    darkModeToggle.checked = false;
+    habits = [];
   }
 }
 
-// Save theme to Local Storage
-function saveTheme(theme) {
-  localStorage.setItem(THEME_STORAGE_KEY, theme);
+// ===== Save habits to Local Storage =====
+function saveHabits() {
+  localStorage.setItem("habits", JSON.stringify(habits));
 }
 
-// ---- Dashboard rendering ----
+// ===== Get today's date as "YYYY-MM-DD" =====
+function getTodayString() {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+}
 
-// Count today's completed/pending habits
-function calculateTodayStats() {
-  const today = getTodayDateString();
-  let completedCount = 0;
+// ===== Show today's date in the header =====
+function showTodayDate() {
+  const today = new Date();
 
-  habits.forEach((habit) => {
-    if (habit.completions[today] === true) {
-      completedCount += 1;
-    }
+  const weekday = today.toLocaleDateString("en-US", { weekday: "long" });
+  const fullDate = today.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
   });
 
-  const totalCount = habits.length;
-  const pendingCount = totalCount - completedCount;
-  const percent = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
-
-  return { totalCount, completedCount, pendingCount, percent };
+  document.getElementById("today-weekday").textContent = weekday.toUpperCase();
+  document.getElementById("today-date").textContent = fullDate.toUpperCase();
 }
 
-// Update dashboard stats, ring, and progress bar
-function renderDashboard() {
-  greetingText.textContent = getGreeting();
-  todayDateText.textContent = getFriendlyDateString();
+// ===== Add a habit =====
+function addHabit(event) {
+  event.preventDefault(); // stop the form from reloading the page
 
-  const stats = calculateTodayStats();
+  const nameInput = document.getElementById("habit-name");
+  const categoryInput = document.getElementById("habit-category");
+  const goalInput = document.getElementById("habit-goal");
 
-  statTotal.textContent = stats.totalCount;
-  statCompleted.textContent = stats.completedCount;
-  statPending.textContent = stats.pendingCount;
-  statPercent.textContent = `${stats.percent}%`;
+  const name = nameInput.value.trim();
+  const category = categoryInput.value;
+  const goal = goalInput.value.trim();
 
-  const offset = RING_CIRCUMFERENCE - (stats.percent / 100) * RING_CIRCUMFERENCE;
-  ringFill.style.strokeDasharray = `${RING_CIRCUMFERENCE}`;
-  ringFill.style.strokeDashoffset = `${offset}`;
-  ringPercentText.textContent = `${stats.percent}%`;
-
-  progressBarFill.style.width = `${stats.percent}%`;
-}
-
-// Show a random quote
-function renderMotivationalQuote() {
-  const randomIndex = Math.floor(Math.random() * motivationalQuotes.length);
-  quoteText.textContent = motivationalQuotes[randomIndex];
-}
-
-// ---- Habit list rendering ----
-
-// Render habit cards
-function renderHabitList() {
-  habitListEl.innerHTML = "";
-  emptyHabitsMessage.hidden = habits.length !== 0;
-
-  const today = getTodayDateString();
-
-  habits.forEach((habit) => {
-    const isDoneToday = habit.completions[today] === true;
-
-    const card = document.createElement("div");
-    card.className = "habit-card" + (isDoneToday ? " completed" : "");
-    card.style.setProperty("--habit-color", habit.color || "#3F8A5E");
-
-    card.innerHTML = `
-      <div class="habit-card-top">
-        <span class="habit-icon">${categoryIcons[habit.category] || "✨"}</span>
-        <button class="delete-icon-btn" data-id="${habit.id}" title="Delete habit">✕</button>
-      </div>
-      <p class="habit-name">${habit.name}</p>
-      <span class="habit-category">${habit.category}</span>
-      ${habit.goal ? `<p class="habit-goal">Goal: ${habit.goal}</p>` : ""}
-      <p class="habit-status ${isDoneToday ? "done" : "pending"}">
-        ${isDoneToday ? "✓ Completed today" : "○ Not completed yet"}
-      </p>
-      <div class="habit-card-actions">
-        <button class="btn ${isDoneToday ? "btn-ghost" : "btn-primary"} complete-btn" data-id="${habit.id}">
-          ${isDoneToday ? "Undo" : "Mark Complete"}
-        </button>
-      </div>
-    `;
-
-    habitListEl.appendChild(card);
-  });
-
-  attachHabitCardEvents();
-}
-
-// Hook up Complete/Delete buttons on each card
-function attachHabitCardEvents() {
-  const completeButtons = document.querySelectorAll(".complete-btn");
-  const deleteButtons = document.querySelectorAll(".delete-icon-btn");
-
-  completeButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      toggleHabitComplete(button.dataset.id);
-    });
-  });
-
-  deleteButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      deleteHabit(button.dataset.id);
-    });
-  });
-}
-
-// ---- Habit actions ----
-
-// Add a new habit
-function handleAddHabit(event) {
-  event.preventDefault();
-
-  const name = habitNameInput.value.trim();
-  const category = habitCategorySelect.value;
-  const goal = habitGoalInput.value.trim();
-
-  // Basic validation
   if (name === "") {
-    formError.textContent = "Please enter a habit name before adding it.";
+    alert("Please enter a habit name.");
     return;
   }
 
-  formError.textContent = "";
-
   const newHabit = {
-    id: Date.now().toString(),
+    id: Date.now(),
     name: name,
     category: category,
     goal: goal,
-    color: selectedColor,
-    completions: {},
+    completed: false,
+    date: ""
   };
 
   habits.push(newHabit);
   saveHabits();
-
-  clearAddHabitForm();
-  renderHabitList();
-  renderDashboard();
-
-  switchView("habits-view");
+  renderHabits();
+  updateProgress();
+  clearForm();
 }
 
-// Mark habit as completed for today (or undo)
-function toggleHabitComplete(habitId) {
-  const today = getTodayDateString();
-  const habit = habits.find((item) => item.id === habitId);
-  if (!habit) return;
+// ===== Clear the add-habit form =====
+function clearForm() {
+  document.getElementById("habit-name").value = "";
+  document.getElementById("habit-goal").value = "";
+  document.getElementById("habit-category").selectedIndex = 0;
+}
 
-  const alreadyDone = habit.completions[today] === true;
-  habit.completions[today] = !alreadyDone;
+// ===== Complete or undo a habit for today =====
+function completeHabit(id) {
+  const today = getTodayString();
+
+  habits.forEach(function (habit) {
+    if (habit.id === id) {
+      if (habit.completed && habit.date === today) {
+        // it was already done today, so undo it
+        habit.completed = false;
+        habit.date = "";
+      } else {
+        // mark it as done today
+        habit.completed = true;
+        habit.date = today;
+      }
+    }
+  });
 
   saveHabits();
-  renderHabitList();
-  renderDashboard();
+  renderHabits();
+  updateProgress();
 }
 
-// Delete a habit
-function deleteHabit(habitId) {
-  const confirmDelete = confirm("Delete this habit? This cannot be undone.");
-  if (!confirmDelete) return;
-
-  habits = habits.filter((item) => item.id !== habitId);
+// ===== Delete a habit =====
+function deleteHabit(id) {
+  habits = habits.filter(function (habit) {
+    return habit.id !== id;
+  });
 
   saveHabits();
-  renderHabitList();
-  renderDashboard();
+  renderHabits();
+  updateProgress();
 }
 
-// Reset the Add Habit form
-function clearAddHabitForm() {
-  addHabitForm.reset();
-  formError.textContent = "";
-  selectedColor = colorOptions[0];
-  highlightSelectedSwatch();
-}
+// ===== Display habits on the page =====
+function renderHabits() {
+  const container = document.getElementById("habits-container");
+  const emptyMessage = document.getElementById("empty-message");
+  const today = getTodayString();
 
-// ---- Color swatches ----
+  container.innerHTML = "";
 
-// Build the color swatch buttons
-function renderColorSwatches() {
-  colorSwatchRow.innerHTML = "";
+  if (habits.length === 0) {
+    emptyMessage.style.display = "block";
+    return;
+  }
 
-  colorOptions.forEach((color) => {
-    const swatch = document.createElement("button");
-    swatch.type = "button";
-    swatch.className = "color-swatch";
-    swatch.style.backgroundColor = color;
-    swatch.dataset.color = color;
+  emptyMessage.style.display = "none";
 
-    swatch.addEventListener("click", () => {
-      selectedColor = color;
-      highlightSelectedSwatch();
-    });
+  habits.forEach(function (habit) {
+    const isDone = habit.completed && habit.date === today;
 
-    colorSwatchRow.appendChild(swatch);
-  });
+    const row = document.createElement("div");
+    row.className = isDone ? "habit-row done" : "habit-row";
 
-  highlightSelectedSwatch();
-}
+    row.innerHTML =
+      '<div class="habit-circle">' + (isDone ? "&#10003;" : "&#9675;") + "</div>" +
+      '<div class="habit-info">' +
+        '<p class="habit-name">' + habit.name + "</p>" +
+        '<p class="habit-category">' + habit.category + "</p>" +
+        '<p class="habit-goal">' + (isDone ? "Completed" : habit.goal) + "</p>" +
+      "</div>" +
+      '<div class="habit-actions">' +
+        '<button class="complete-btn" onclick="completeHabit(' + habit.id + ')">' + (isDone ? "Undo" : "Done") + "</button>" +
+        '<button class="delete-btn" onclick="deleteHabit(' + habit.id + ')">Delete</button>' +
+      "</div>";
 
-// Highlight the selected swatch
-function highlightSelectedSwatch() {
-  const allSwatches = document.querySelectorAll(".color-swatch");
-  allSwatches.forEach((swatch) => {
-    swatch.classList.toggle("selected", swatch.dataset.color === selectedColor);
+    container.appendChild(row);
   });
 }
 
-// ---- Navigation ----
+// ===== Update today's progress =====
+function updateProgress() {
+  const today = getTodayString();
+  const total = habits.length;
 
-// Switch between views
-function switchView(viewId) {
-  views.forEach((view) => {
-    view.classList.toggle("active", view.id === viewId);
-  });
+  const completedCount = habits.filter(function (habit) {
+    return habit.completed && habit.date === today;
+  }).length;
 
-  navItems.forEach((item) => {
-    item.classList.toggle("active", item.dataset.view === viewId);
-  });
+  let percent = 0;
+  if (total > 0) {
+    percent = Math.round((completedCount / total) * 100);
+  }
+
+  document.getElementById("progress-count").textContent = completedCount + " / " + total + " habits";
+  document.getElementById("progress-fill").style.width = percent + "%";
+  document.getElementById("progress-percent").textContent = percent + "%";
+
+  let message = "Start small. One habit is enough.";
+  if (total > 0 && percent === 100) {
+    message = "Perfect day. Keep the rhythm going!";
+  } else if (percent >= 50) {
+    message = "You're halfway there.";
+  } else if (percent > 0) {
+    message = "Good start. Keep going.";
+  }
+
+  document.getElementById("progress-message").textContent = message;
 }
 
-// ---- Settings ----
+// ===== Switch between light and dark mode =====
+function toggleTheme() {
+  document.body.classList.toggle("dark");
 
-// Reset all data
-function resetAllData() {
-  const confirmReset = confirm(
-    "This will permanently delete all habits and reset your settings. Continue?"
-  );
-  if (!confirmReset) return;
-
-  localStorage.removeItem(HABITS_STORAGE_KEY);
-  localStorage.removeItem(THEME_STORAGE_KEY);
-
-  habits = [];
-  applyTheme("light");
-
-  renderDashboard();
-  renderHabitList();
+  if (document.body.classList.contains("dark")) {
+    localStorage.setItem("theme", "dark");
+  } else {
+    localStorage.setItem("theme", "light");
+  }
 }
 
-// ---- Event listeners ----
+// ===== Load the saved theme when the app starts =====
+function loadTheme() {
+  const savedTheme = localStorage.getItem("theme");
 
-navItems.forEach((item) => {
-  item.addEventListener("click", () => {
-    switchView(item.dataset.view);
-  });
-});
-
-addHabitForm.addEventListener("submit", handleAddHabit);
-clearFormBtn.addEventListener("click", clearAddHabitForm);
-
-darkModeToggle.addEventListener("change", () => {
-  const newTheme = darkModeToggle.checked ? "dark" : "light";
-  applyTheme(newTheme);
-  saveTheme(newTheme);
-});
-
-resetDataBtn.addEventListener("click", resetAllData);
-
-// ---- Startup ----
-
-function initApp() {
-  loadTheme();
-  loadHabits();
-  renderColorSwatches();
-  renderDashboard();
-  renderMotivationalQuote();
-  renderHabitList();
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+    document.getElementById("theme-toggle").checked = true;
+  }
 }
 
-initApp();
+// ===== Reset all data =====
+function resetData() {
+  const sure = confirm("This will delete all your habits. Are you sure?");
+
+  if (sure) {
+    habits = [];
+    localStorage.removeItem("habits");
+    renderHabits();
+    updateProgress();
+  }
+}
+
+// ===== Event listeners =====
+document.getElementById("habit-form").addEventListener("submit", addHabit);
+document.getElementById("clear-btn").addEventListener("click", clearForm);
+document.getElementById("theme-toggle").addEventListener("change", toggleTheme);
+document.getElementById("reset-btn").addEventListener("click", resetData);
+
+// ===== Start the app =====
+loadHabits();
+loadTheme();
+showTodayDate();
+renderHabits();
+updateProgress();
