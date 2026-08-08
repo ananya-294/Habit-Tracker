@@ -1,38 +1,24 @@
-// main.js - Electron main process (creates the app window)
+// Import the parts of Electron we need
+const { app, BrowserWindow } = require('electron');
 
-const { app, BrowserWindow, Menu } = require("electron");
-
-// Create the main app window
+// This function creates the app window
 function createWindow() {
-  const mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 900,
-    minHeight: 600,
-    backgroundColor: "#F5F8F5",
-    autoHideMenuBar: true, // hide default menu bar
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-    },
+  const window = new BrowserWindow({
+    width: 900,
+    height: 720,
+    autoHideMenuBar: true // hides the default menu bar
   });
 
-  Menu.setApplicationMenu(null); // remove menu bar completely
-  mainWindow.loadFile("index.html");
+  // Load our HTML file into the window
+  window.loadFile('index.html');
 }
 
-app.whenReady().then(() => {
-  createWindow();
+// When Electron is ready, create the window
+app.whenReady().then(createWindow);
 
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
-});
-
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+// Quit the app when all windows are closed (except on Mac)
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
