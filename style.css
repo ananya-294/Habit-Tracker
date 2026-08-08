@@ -23,7 +23,7 @@ body.dark {
   --line: #3a352e;
 }
 
-/* ===== Base style===== */
+/* ===== Base styles ===== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
