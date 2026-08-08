@@ -1,17 +1,16 @@
-# HabitFlow – Daily Habit Tracker
+# HabitFlow
 
-A simple, offline desktop app for tracking daily habits.
----
+A small offline desktop app for tracking daily habits..
 
 ## Folder Structure
 
 ```
 HabitFlow/
+│
 ├── index.html      
 ├── style.css        
 ├── script.js         
 ├── main.js            
 ├── package.json        
-└── README.md             
+└── README.md            
 ```
----
