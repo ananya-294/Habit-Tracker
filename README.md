@@ -1,6 +1,5 @@
 # HabitFlow
-
-A small offline desktop app for tracking daily habits..
+For tracking daily habits..
 
 ## Folder Structure
 
