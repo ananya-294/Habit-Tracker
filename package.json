@@ -1,11 +1,12 @@
 {
   "name": "habitflow",
   "version": "1.0.0",
+  "description": "A simple offline daily habit tracker desktop app",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "devDependencies": {
+  "dependencies": {
     "electron": "^31.0.0"
   }
 }
